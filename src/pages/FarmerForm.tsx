@@ -1,108 +1,78 @@
-import React, { useState, useRef, useEffect } from "react";
-import HeroSection from "../components/HeroSection";
-import { io, Socket } from "socket.io-client";
+import React, { useState } from 'react';
 
 export default function FarmerForm() {
-  const [form, setForm] = useState({ name: "", quantity: "", price: "", harvestDate: "" });
-  const [status, setStatus] = useState("");
-  const socketRef = useRef<Socket | null>(null);
+  const [cropName, setCropName] = useState('');
+  const [quantity, setQuantity] = useState('');
+  const [price, setPrice] = useState('');
+  const [farmerName, setFarmerName] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    // use 127.0.0.1 to avoid potential localhost resolution quirks in dev
-    socketRef.current = io("http://127.0.0.1:3000", { transports: ["websocket"] });
-
-    socketRef.current.on("connect", () =>
-      console.log("Farmer socket connected", socketRef.current?.id)
-    );
-
-    socketRef.current.on("inventory:changed", (data) => {
-      console.log("Farmer received inventory:changed", data);
-    });
-
-    socketRef.current.on("connect_error", (err) =>
-      console.error("Farmer socket connect_error", err)
-    );
-
-    // optional: log any event for debugging
-    socketRef.current.onAny((ev, p) => console.log("Farmer any event", ev, p));
-
-    return () => {
-      socketRef.current?.disconnect();
-      socketRef.current = null;
-    };
-  }, []);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setStatus("Submitting...");
+    setError(null);
+    setLoading(true);
+
     const payload = {
-      name: form.name,
-      quantity: Number(form.quantity),
-      price: Number(form.price),
-      harvestDate: form.harvestDate || new Date().toISOString(),
-      createdAt: new Date().toISOString()
+      name: cropName,
+      quantity: Number(quantity || 0),
+      price: Number(price || 0),
+      farmer: farmerName || 'unknown'
     };
 
     try {
-      const res = await fetch("http://localhost:4001/crops", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch('/crops', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      if (!res.ok) throw new Error("Network error");
-      const json = await res.json();
 
-      setStatus("Submitted successfully");
-      setForm({ name: "", quantity: "", price: "", harvestDate: "" });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `status ${res.status}`);
+      }
 
-      // emit with server-expected keys and request ack
-      socketRef.current?.emit(
-        "inventory:update",
-        {
-          name: payload.name,
-          qty: payload.quantity,
-          price: payload.price,
-          harvest: payload.harvestDate,
-          photo: ""
-        },
-        (ack: any) => console.log("inventory:update ack", ack)
-      );
-
-      console.log("Farmer publish payload:", payload, "serverResp:", json);
-    } catch (err) {
-      console.error("Publish failed", err);
-      setStatus("Submit failed");
+      // success: clear form and notify other parts of the app
+      setCropName('');
+      setQuantity('');
+      setPrice('');
+      setFarmerName('');
+      window.dispatchEvent(new Event('crops-updated'));
+    } catch (err: any) {
+      console.error('Failed to add crop', err);
+      setError(err?.message || 'Failed to add crop');
+    } finally {
+      setLoading(false);
     }
-  };
+  }
 
   return (
-    <div>
-      <HeroSection />
-      <section style={{ padding: 24, maxWidth: 760, margin: "0 auto" }}>
-        <h2>Add your farm's crop details</h2>
-        <form onSubmit={handleSubmit} style={{ display: "grid", gap: 12, marginTop: 12 }}>
-          <input
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            placeholder="Crop name (e.g., Tomato)"
-            required
-          />
-          <input name="quantity" value={form.quantity} onChange={handleChange} placeholder="Quantity (kg)" required />
-          <input name="price" value={form.price} onChange={handleChange} placeholder="Price per kg (₹)" required />
-          <input name="harvestDate" value={form.harvestDate} onChange={handleChange} type="date" />
-          <div style={{ display: "flex", gap: 10 }}>
-            <button type="submit" className="primary">
-              Submit Details
-            </button>
-            <div style={{ alignSelf: "center" }}>{status}</div>
-          </div>
-        </form>
-      </section>
-    </div>
+    <form onSubmit={onSubmit} style={{ maxWidth: 520 }}>
+      <div>
+        <label htmlFor="cropName">Crop name</label>
+        <input id="cropName" value={cropName} onChange={e => setCropName(e.target.value)} required />
+      </div>
+
+      <div>
+        <label htmlFor="quantity">Quantity</label>
+        <input id="quantity" value={quantity} onChange={e => setQuantity(e.target.value)} type="number" min="0" required />
+      </div>
+
+      <div>
+        <label htmlFor="price">Price</label>
+        <input id="price" value={price} onChange={e => setPrice(e.target.value)} type="number" min="0" required />
+      </div>
+
+      <div>
+        <label htmlFor="farmerName">Farmer</label>
+        <input id="farmerName" value={farmerName} onChange={e => setFarmerName(e.target.value)} />
+      </div>
+
+      <div style={{ marginTop: 12 }}>
+        <button type="submit" disabled={loading}>{loading ? 'Adding...' : 'Add Crop'}</button>
+      </div>
+
+      {error && <div role="alert" style={{ color: 'crimson', marginTop: 8 }}>{error}</div>}
+    </form>
   );
 }

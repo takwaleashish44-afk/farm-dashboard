@@ -1,0 +1,1 @@
+﻿{ "crops": [ { "id": 1, "name": "Wheat", "quantity": 10, "price": 100, "farmer": "seed" } ] }
