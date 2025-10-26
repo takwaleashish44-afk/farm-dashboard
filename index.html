@@ -1,0 +1,47 @@
+﻿<!-- Save as index.html (or integrate into your project) -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dealer Dashboard</title>
+
+  <!-- Preload hero image for faster first paint -->
+  <link rel="preload" as="image" href="/images/hero-bg.webp">
+
+  <link rel="stylesheet" href="/src/index.css">
+</head>
+<body>
+  <div id="root">
+    <div class="container">
+      <header class="header">
+        <h1>Dealer Dashboard</h1>
+        <p class="small">Browse farmer-submitted inventory and request purchases</p>
+      </header>
+
+      <section class="hero" role="region" aria-label="Available crops hero">
+        <div class="hero-inner">
+          <h2>Available Crops</h2>
+          <p>Browse farmer-submitted inventory and request purchases.</p>
+        </div>
+      </section>
+
+      <main>
+        <div class="grid">
+          <article class="card" aria-labelledby="tomato-title">
+            <h3 id="tomato-title">Tomatoes</h3>
+            <p class="small">100 kg available · ₹30 per kg · Harvested: 10/10/2025</p>
+            <button class="btn btn-primary">Request Purchase</button>
+          </article>
+
+          <article class="card" aria-labelledby="onion-title">
+            <h3 id="onion-title">Onions</h3>
+            <p class="small">80 kg available · ₹25 per kg · Harvested: 10/10/2025</p>
+            <button class="btn btn-primary">Request Purchase</button>
+          </article>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

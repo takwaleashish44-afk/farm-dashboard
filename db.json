@@ -1,0 +1,35 @@
+{
+  "crops": [
+    {
+      "id": 1,
+      "name": "Tomatoes",
+      "quantity": 100,
+      "price": 30,
+      "harvestDate": "2025-10-20"
+    },
+    {
+      "id": 2,
+      "name": "Onions",
+      "quantity": 80,
+      "price": 25,
+      "harvestDate": "2025-10-18"
+    }
+  ],
+  "orders": [
+    {
+      "cropId": 1,
+      "createdAt": "2025-10-25T12:09:27.284Z",
+      "id": 1
+    },
+    {
+      "cropId": 2,
+      "createdAt": "2025-10-25T12:09:31.909Z",
+      "id": 2
+    },
+    {
+      "cropId": 1,
+      "createdAt": "2025-10-25T12:10:25.979Z",
+      "id": 3
+    }
+  ]
+}
