@@ -1,0 +1,81 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+:root{
+  --accent:#4CAF50;
+  --bg:#ffffff;
+  --muted:#666;
+  --card:#fafafa;
+}
+
+*{box-sizing:border-box}
+body{
+  font-family: Inter, Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+  margin:0;
+  color:#111;
+  background:var(--bg);
+}
+
+/* Hero */
+.hero{
+  height:48vh;
+  background:linear-gradient(180deg, rgba(0,0,0,0.28), rgba(0,0,0,0.4)), url('/src/assets/hero-banner.png') center/cover no-repeat;
+  display:flex;
+  align-items:center;
+}
+.hero.small{height:22vh; background-size:cover;}
+.hero-content{
+  padding:40px 24px;
+  color:#fff;
+  max-width:900px;
+}
+.hero h1{font-size:2.25rem; margin:0 0 8px 0}
+.hero p{margin:0 0 12px 0; color:rgba(255,255,255,0.9)}
+.cta, .primary{
+  display:inline-block;
+  background:var(--accent);
+  color:#fff;
+  padding:10px 16px;
+  border-radius:8px;
+  text-decoration:none;
+  font-weight:600;
+}
+
+/* Grid & cards */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));
+  gap:16px;
+}
+.card{
+  background:var(--card);
+  border:1px solid #eee;
+  border-radius:12px;
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.card-image{
+  height:130px;
+  border-radius:8px;
+  background:#f0f0f0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#888;
+  font-weight:600;
+}
+
+/* buttons & form */
+button{cursor:pointer}
+.outline{
+  background:#fff;
+  border:1px solid var(--accent);
+  color:var(--accent);
+  padding:8px 10px;
+  border-radius:8px;
+  font-weight:600;
+}
+input{padding:10px;border:1px solid #ddd;border-radius:8px}
+.muted{color:var(--muted);margin:0}
+a.cta{background:var(--accent)}

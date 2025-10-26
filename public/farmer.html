@@ -1,0 +1,121 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Farmer — Publish Crops</title>
+  <style>
+    :root{--primary:#0b69ff;--muted:#6b7280;--card:#fff;--radius:10px;--shadow:0 8px 30px rgba(20,20,50,0.06);--pad:16px;font-family:Inter,system-ui,Segoe UI,Roboto,Arial}
+    body{margin:0;background:#f6f8fb;color:#0f172a}
+    .wrap{max-width:720px;margin:28px auto;padding:var(--pad)}
+    .card{background:var(--card);padding:16px;border-radius:var(--radius);box-shadow:var(--shadow)}
+    .row{display:flex;gap:8px;margin-bottom:10px}
+    input{width:100%;padding:8px;border-radius:8px;border:1px solid #e9edf2}
+    .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:10px}
+    .btn{background:var(--primary);color:#fff;padding:8px 12px;border-radius:8px;border:0;cursor:pointer}
+    .btn-ghost{background:transparent;border:1px solid #e6e9ef;padding:8px 12px;border-radius:8px;cursor:pointer}
+    .list{margin-top:12px}
+    .item{padding:8px;border-radius:8px;border:1px solid #f1f5f9;margin-bottom:8px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h2>Farmer — Publish Crop</h2>
+
+    <div class="card">
+      <div class="row">
+        <div style="flex:1">
+          <label class="muted">Crop name</label>
+          <input id="name" placeholder="e.g., Tomatoes">
+        </div>
+        <div style="width:120px">
+          <label class="muted">Qty (kg)</label>
+          <input id="qty" type="number" min="0" value="0">
+        </div>
+      </div>
+
+      <div class="row">
+        <div style="width:160px">
+          <label class="muted">Price (₹/kg)</label>
+          <input id="price" type="number" min="0" value="0">
+        </div>
+        <div style="flex:1">
+          <label class="muted">Harvest date</label>
+          <input id="harvest" type="date">
+        </div>
+      </div>
+
+      <div class="row">
+        <div style="flex:1">
+          <label class="muted">Photo URL (optional)</label>
+          <input id="photo" placeholder="hero-bg.jpg or https://...">
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="clear" class="btn-ghost">Clear</button>
+        <button id="publish" class="btn">Publish</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <div class="small muted">Your published crops (live)</div>
+      <div id="myList" class="list"></div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    socket.emit('join', 'farmer');
+
+    const nameEl = document.getElementById('name');
+    const qtyEl = document.getElementById('qty');
+    const priceEl = document.getElementById('price');
+    const harvestEl = document.getElementById('harvest');
+    const photoEl = document.getElementById('photo');
+    const publishBtn = document.getElementById('publish');
+    const clearBtn = document.getElementById('clear');
+    const myList = document.getElementById('myList');
+
+    function renderMine(items){
+      myList.innerHTML = '';
+      items.forEach(it=>{
+        const d = document.createElement('div'); d.className='item';
+        d.innerHTML = `<strong>${it.name}</strong> — ${it.qty.toLocaleString()} kg · ₹${it.price.toLocaleString()}/kg · Harvest: ${it.harvest}`;
+if (it.photo) {
+  const img = document.createElement('img');
+  img.src = it.photo;
+  img.style.height = '40px';
+  img.style.marginRight = '8px';
+  d.prepend(img);
+}
+        myList.appendChild(d);
+      });
+    }
+
+    publishBtn.addEventListener('click', () => {
+  const payload = {
+    name: nameEl.value.trim(),
+    qty: Number(qtyEl.value||0),
+    price: Number(priceEl.value||0),
+    harvest: harvestEl.value || new Date().toISOString().slice(0,10),
+    photo: photoEl.value.trim() || ''
+  };
+  console.log('Farmer publish payload:', payload);
+  if(!payload.name || payload.qty<=0 || payload.price<=0){ alert('Fill name, qty and price'); return; }
+  socket.emit('inventory:update', payload);
+  console.log('Emit inventory:update done');
+  clearBtn.click();
+});
+
+    clearBtn.addEventListener('click', () => {
+      nameEl.value=''; qtyEl.value=0; priceEl.value=0; harvestEl.value=''; photoEl.value='';
+    });
+
+    socket.on('inventory:init', renderMine);
+    socket.on('inventory:changed', renderMine);
+    socket.on('error:validation', (e) => alert('Server: ' + (e && e.message ? e.message : 'Validation error')));
+  </script>
+</body>
+</html>
